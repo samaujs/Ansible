@@ -26,4 +26,4 @@
 <br>$ ansible-playbook ec2_playbook.yml --ask-vault-pass --tags create_ec2
 
 (9) Login to the newly created EC2
-<br>$ ssh -i ~/ansible/AWS/SSH/aws_access ubuntu@<Filled in with EC2 public IP address or Public DNS>
+<br>$ ssh -i ~/ansible/AWS/SSH/aws_access ubuntu@"Filled in with EC2 public IP address or Public DNS"
