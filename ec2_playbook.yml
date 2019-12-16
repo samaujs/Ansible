@@ -1,0 +1,99 @@
+# AWS playbook Example (YAML)
+---
+
+- hosts: localhost
+  connection: local
+  gather_facts: False
+
+  vars:
+    key_name: aws_access
+    region: us-east-2
+    # ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20191114 with "ami-08b3278ea6e379084"
+    # AMI "ami-08b3278ea6e379084" available only in "ap-southeast-1" region
+    # AMI "ami-0f93b5fd8f220e428" available only in "us-east-2" region
+    image: ami-0f93b5fd8f220e428 # https://cloud-images.ubuntu.com/locator/ec2/
+    id: "Demo-app"
+    sec_group: "{{ id }}-sec-grp"
+    ec2_instance_count: 1
+    ec2_tag: "ansible_aws_deployment"
+    ssh_port: 22
+
+  tasks:
+
+    - name: Gather Facts
+      block:
+
+      - name: Get instances facts
+        # "ec2_instance_facts" is deprecated
+        ec2_instance_info:  
+          aws_access_key: "{{ec2_access_key}}"
+          aws_secret_key: "{{ec2_secret_key}}"
+          region: "{{ region }}"
+        register: result
+
+      - name: Instances ID
+        debug:
+          msg: "ID: {{ item.instance_id }} - State: {{ item.state.name }} - Public DNS: {{ item.public_dns_name }}"
+        loop: "{{ result.instances }}"
+
+      tags: always
+
+
+    - name: Provisioning EC2 instances
+      block:
+
+      - name: Upload public key to AWS
+        ec2_key:
+          name: "{{ key_name }}"
+          key_material: "{{ lookup('file', '/home/ubuntu/ansible/AWS/SSH/{{ key_name }}.pub') }}"
+          region: "{{ region }}"
+          aws_access_key: "{{ec2_access_key}}"
+          aws_secret_key: "{{ec2_secret_key}}"
+
+      - name: Create Security group
+        ec2_group:
+          name: "{{ sec_group }}"
+          description: "Security group for app {{ id }}"
+          tags: { Name: "{{ id }}-ansible" }
+          
+          # vpc_id: 12345
+          region: "{{ region }}"
+          aws_access_key: "{{ec2_access_key}}"
+          aws_secret_key: "{{ec2_secret_key}}"
+          rules:
+            - proto: tcp
+              ports:
+                - "{{ ssh_port }}"
+              cidr_ip: 0.0.0.0/0
+              rule_desc: allow all on ssh port
+        register: result_sec_group
+
+      - name: Provision instance(s)
+        ec2:
+          aws_access_key: "{{ec2_access_key}}"
+          aws_secret_key: "{{ec2_secret_key}}"
+          key_name: "{{ key_name }}"
+          id: "{{ id }}"
+          group_id: "{{ result_sec_group.group_id }}"
+          image: "{{ image }}"
+          instance_type: t2.micro
+          region: "{{ region }}"
+          count: "{{ ec2_instance_count }}"
+          # exact_count: 2
+          # count_tag:
+          #   Name: App
+          instance_tags: { Name: "{{ ec2_tag }}" }
+          wait: true
+
+      - name: Wait for instance(s) to come up before running other tasks
+        command: date
+        # command output can be displayed with the flag -v when executing playbook
+        register: command_output
+
+      - name: Print command output
+        # print previously registered information
+        debug: var=command_output.stdout
+ 
+      tags: ['never', 'create_ec2']
+
+# End of file
