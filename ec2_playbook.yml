@@ -7,14 +7,14 @@
 
   vars:
     key_name: aws_access
-    region: us-east-2
+    region: ap-southeast-1 # us-east-2
     # ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20191114 with "ami-08b3278ea6e379084"
     # AMI "ami-08b3278ea6e379084" available only in "ap-southeast-1" region
     # AMI "ami-0f93b5fd8f220e428" available only in "us-east-2" region
-    image: ami-0f93b5fd8f220e428 # https://cloud-images.ubuntu.com/locator/ec2/
-    id: "Demo-app"
+    image: ami-08b3278ea6e379084 # ami-0f93b5fd8f220e428 # https://cloud-images.ubuntu.com/locator/ec2/
+    id: "D2AppW"
     sec_group: "{{ id }}-sec-grp"
-    ec2_instance_count: 1
+    ec2_instance_count: 2
     ec2_tag: "ansible_aws_deployment"
     ssh_port: 22
 
@@ -63,7 +63,7 @@
           rules:
             - proto: tcp
               ports:
-                - "{{ ssh_port }}"
+                - "{{ ssh_port }}" # need the quotes
               cidr_ip: 0.0.0.0/0
               rule_desc: allow all on ssh port
         register: result_sec_group
@@ -85,15 +85,35 @@
           instance_tags: { Name: "{{ ec2_tag }}" }
           wait: true
 
+      #- name: Print command output
+      #  command: date
+        # command output can be displayed with the flag -v when executing playbook
+        # register: command_output
+        # print previously registered information
+        # debug: var=command_output.stdout
+      
       - name: Wait for instance(s) to come up before running other tasks
+      #  command: ls
+        wait_for: host={{ item.public_dns_name }} port={{ ssh_port }} search_regex=OpenSSH
+        with_items: "{{  ec2.tagged_instances }}"
+        when: item.public_dns_name is defined
+      
+      - name: Print date and register it
         command: date
         # command output can be displayed with the flag -v when executing playbook
         register: command_output
 
-      - name: Print command output
+      - name: Print command output with debug
         # print previously registered information
         debug: var=command_output.stdout
- 
+
+      - name: EOF
+        command: ls
+        register: command_output
+
+      - name: Print command output with debug
+        debug: var=command_output.stdout
+
       tags: ['never', 'create_ec2']
 
 # End of file
