@@ -31,4 +31,7 @@
 (10) Force ansible to use local connection instead of ssh for ping servers listed in ansible_hosts to work 
 <br>$ ansible all -m ping -c local --ask-vault-pass
 
-** Note : If encountered the "IdempotentParameterMismatch." error, change “id” or “region” to some different values and run playbook again **
+** Note :
+   - If encountered the "IdempotentParameterMismatch." error, change “id” or “region” to some different values and run playbook again
+   - export ANSIBLE_INVENTORY=/home/ubuntu/ansible/ansible_hosts
+**
