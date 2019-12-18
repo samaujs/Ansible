@@ -1,0 +1,4 @@
+#ubuntu@172.31.6.161
+#ansible_ssh_host=@3.0.19.42 ansible_ssh_user=ubuntu
+3.0.19.42 ansible_user=ubuntu
+13.250.121.127 ansible_user=ubuntu

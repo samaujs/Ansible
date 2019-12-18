@@ -12,7 +12,7 @@
     # AMI "ami-08b3278ea6e379084" available only in "ap-southeast-1" region
     # AMI "ami-0f93b5fd8f220e428" available only in "us-east-2" region
     image: ami-08b3278ea6e379084 # ami-0f93b5fd8f220e428 # https://cloud-images.ubuntu.com/locator/ec2/
-    id: "D2AppW"
+    id: "D2AppTP"
     sec_group: "{{ id }}-sec-grp"
     ec2_instance_count: 2
     ec2_tag: "ansible_aws_deployment"
@@ -83,19 +83,13 @@
           # count_tag:
           #   Name: App
           instance_tags: { Name: "{{ ec2_tag }}" }
-          wait: true
+          wait: true # or yes
+        register: ec2
 
-      #- name: Print command output
-      #  command: date
-        # command output can be displayed with the flag -v when executing playbook
-        # register: command_output
-        # print previously registered information
-        # debug: var=command_output.stdout
-      
       - name: Wait for instance(s) to come up before running other tasks
-      #  command: ls
         wait_for: host={{ item.public_dns_name }} port={{ ssh_port }} search_regex=OpenSSH
-        with_items: "{{  ec2.tagged_instances }}"
+        with_items: "{{  ec2.instances }}"
+        # ec2.tagged_instances will cause to skip as the condition is False
         when: item.public_dns_name is defined
       
       - name: Print date and register it
@@ -103,15 +97,15 @@
         # command output can be displayed with the flag -v when executing playbook
         register: command_output
 
-      - name: Print command output with debug
+      - name: Print date with debug
         # print previously registered information
         debug: var=command_output.stdout
 
-      - name: EOF
-        command: ls
+      - name: Print filenames in the current directory
+        command: "ls -tl"
         register: command_output
 
-      - name: Print command output with debug
+      - name: Print filenames with debug
         debug: var=command_output.stdout
 
       tags: ['never', 'create_ec2']
