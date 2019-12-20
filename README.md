@@ -31,7 +31,31 @@
 (10) Force ansible to use local connection instead of ssh for ping servers listed in ansible_hosts to work 
 <br>$ ansible all -m ping -c local --ask-vault-pass
 
+(11) Ping remote servers with created "ansible.cfg" definition file
+<br> $ ansible all -m ping --ask-vault-pass
+
+(12) Run command in remote servers defined in "ansible.cfg" file
+<br>$ ansible all -a uptime --ask-vault-pass
+<br>or
+<br>$ ansible Ngnixservers -a uptime --ask-vault-pass
+
+(13) Run command as root user with flag -b
+<br>$ ansible Ngnixservers -b -a "tail /var/log/syslog" --ask-vault-pass
+
+(14) Install application package via ansible apt from command line
+<br>$ ansible Ngnixservers -b -m apt -a "name=nginx update_cache=yes state=latest" --ask-vault-pass
+
+(15) Restart application with ansible service from command line
+<br>$ ansible Ngnixservers -b -m service -a "name=nginx state=restarted" --ask-vault-pass
+
+(16) Reboot remote servers with ansible reboot from command line
+<br>$ ansible Ngnixservers -b -m reboot -a "msg=Rebooting... test_command=whoami" --ask-vault-pass
+
+(17) Install application package in remote servers via Playbook
+<br>$ ansible-playbook ngix_playbook.yml --ask-vault-pass
+
 ** Note :
    - If encountered the "IdempotentParameterMismatch." error, change “id” or “region” to some different values and run playbook again
    - export ANSIBLE_INVENTORY=/home/ubuntu/ansible/ansible_hosts
-**
+   - become: true and become_user: root in switch to superuser
+<br>**

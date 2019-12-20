@@ -12,7 +12,7 @@
     # AMI "ami-08b3278ea6e379084" available only in "ap-southeast-1" region
     # AMI "ami-0f93b5fd8f220e428" available only in "us-east-2" region
     image: ami-08b3278ea6e379084 # ami-0f93b5fd8f220e428 # https://cloud-images.ubuntu.com/locator/ec2/
-    id: "D2AppTP"
+    id: "DApp_NGX"
     sec_group: "{{ id }}-sec-grp"
     ec2_instance_count: 2
     ec2_tag: "ansible_aws_deployment"
@@ -37,7 +37,6 @@
         loop: "{{ result.instances }}"
 
       tags: always
-
 
     - name: Provisioning EC2 instances
       block:
@@ -92,6 +91,14 @@
         # ec2.tagged_instances will cause to skip as the condition is False
         when: item.public_dns_name is defined
       
+      - name: Install latest Ngnix locally
+        become: true
+        become_user: root
+        apt:
+          name: nginx
+          state: latest
+          #update_cache: yes
+
       - name: Print date and register it
         command: date
         # command output can be displayed with the flag -v when executing playbook

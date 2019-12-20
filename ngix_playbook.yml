@@ -1,0 +1,18 @@
+# AWS playbook Example (YAML)
+---
+
+- hosts: Ngnixservers
+  become: yes
+  become_user: root
+  
+  tasks:
+
+    - name: Installs Nginx Webserver
+      apt: 
+        name: nginx
+        state: latest
+        update_cache: true
+
+  handlers:
+    - name: Start Nginx
+      service: name=nginx state=started
