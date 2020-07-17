@@ -1,0 +1,9 @@
+-
+    name: Play activity 1
+    hosts: localhost
+    tasks:
+      - name: Execute command 'date'
+        # list module with command "ansible-doc -1"
+        command: date
+      - name: List files
+        command: 'ls -tl'
